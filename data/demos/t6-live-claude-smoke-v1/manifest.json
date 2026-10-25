@@ -1,0 +1,118 @@
+{
+  "schema_version": "1",
+  "artifact_kind": "anthropic_live_smoke",
+  "mode": "live",
+  "generation_attempts": 3,
+  "anthropic_http_200_responses": 2,
+  "technical_rag_e2e_successes": 0,
+  "verification_performed": false,
+  "quality_benchmarked": false,
+  "automatic_retries": 0,
+  "max_output_tokens_per_request": 1024,
+  "max_request_json_bytes": 40000,
+  "model": "claude-sonnet-5",
+  "thinking_type": "disabled",
+  "endpoint": "https://api.anthropic.com/v1/messages",
+  "pricing": {
+    "input_usd_per_million": 2,
+    "output_usd_per_million": 10,
+    "source": "https://platform.claude.com/docs/en/models/sonnet-5/overview",
+    "verified_on": "2026-10-25"
+  },
+  "total_estimated_cost_usd": 0.065194,
+  "request_001_transport": "DNS failure inside sandbox; no HTTP connection. Independent DNS/TCP/TLS probe outside sandbox passed without credentials or HTTP.",
+  "post_smoke_fix": "Preserve text-only partial output on provider stop errors; tested offline only. Request 003 partial text was not retained and cannot be reconstructed.",
+  "requests": [
+    {
+      "path": "request-001.json",
+      "sha256": "36bfecdc897b72f266f44605f92b12791760ec5c40b3130aa02f6c32d4f3d220",
+      "bytes": 243119,
+      "request_id": "t6-live-001",
+      "question": "Đối thoại tại nơi làm việc được tổ chức định kỳ như thế nào?",
+      "status": "FAILED",
+      "error": {
+        "code": "ANTHROPIC_NETWORK_ERROR",
+        "stage": "generation"
+      },
+      "http_status": null,
+      "model": null,
+      "usage": null,
+      "latency_ms": 108.2550999999512,
+      "estimated_cost_usd": null,
+      "evidence_count": 19,
+      "context_status": "ASSEMBLED",
+      "raw_generation_preserved": false
+    },
+    {
+      "path": "request-002.json",
+      "sha256": "062dabdb3bae8c0f6b1294ab7ff54980b2d50fb3bfe212c7c490a1becd456d5c",
+      "bytes": 88607,
+      "request_id": "t6-live-002",
+      "question": "Đối thoại tại nơi làm việc là gì và nhằm mục đích gì?",
+      "status": "FAILED",
+      "error": {
+        "code": "INVALID_OUTPUT",
+        "stage": "structured_output"
+      },
+      "http_status": 200,
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 5774,
+        "output_tokens": 371,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0
+      },
+      "latency_ms": 5241.218499999377,
+      "estimated_cost_usd": 0.015258,
+      "evidence_count": 6,
+      "context_status": "ASSEMBLED",
+      "raw_generation_preserved": true
+    },
+    {
+      "path": "request-003.json",
+      "sha256": "a8e5bef14955f0a7c169aaeaf7d62333ca9bee263121a5330e8fad69ae628ec0",
+      "bytes": 291841,
+      "request_id": "t6-live-003",
+      "question": "Người sử dụng lao động cần thực hiện những việc gì để tổ chức đối thoại định kỳ tại nơi làm việc?",
+      "status": "FAILED",
+      "error": {
+        "code": "ANTHROPIC_INCOMPLETE_OR_REFUSED",
+        "stage": "generation"
+      },
+      "http_status": 200,
+      "model": "claude-sonnet-5",
+      "usage": {
+        "input_tokens": 19848,
+        "output_tokens": 1024,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0
+      },
+      "latency_ms": 10200.360300001194,
+      "estimated_cost_usd": 0.049936,
+      "evidence_count": 23,
+      "context_status": "ASSEMBLED",
+      "raw_generation_preserved": false
+    }
+  ],
+  "current_code_hashes_after_trace_fix": {
+    "ai_core/anthropic_provider.py": "e696d12287b918e7821d2781e0725ad55770cf025b89b7e13d08edd200d9a512",
+    "ai_core/rag_generation.py": "a8791cc9dbf239ec3a1cfee3b36fa49a2f1eaf59d23907655173e99bcaf82b04",
+    "ai_core/basic_rag.py": "7eed16c60f5b125fc6e4e53b4d003d544370311e98ae9e637b70530989786bb9",
+    "ai_core/rag_cli.py": "583f5a709545825568636f8f9f857664d31396b881cc691355cdb4a20a981d8a",
+    "tests/test_anthropic_provider.py": "6a056b32e4296950098d230154d572254aa7b55764a781f0a48b7d6bb7b69411"
+  },
+  "source": {
+    "artifact_hashes": {
+      "chunks.jsonl": "82a655314e03232a5f932b9515b136a56a4d879cd95240f2ddba25256751867c",
+      "structures.jsonl": "d01e9d4019391122ca149128027ce1216137fae02f7dbeeebfb1f04433cc0617",
+      "validation.json": "d41aad31fb4feff73446e5524da26a5199abeac3ad02b1ba2325153d483ccc9d"
+    },
+    "parser_version": "legal-structure-v1.1",
+    "processed_manifest_sha256": "f4dbdeb51800d70bf7a0a38a0f6d07104d3940fa77b7a93bd62daad0f2be595d",
+    "processed_schema_version": "2",
+    "processed_snapshot_id": "8040db1bfeddb99b93e8937a1c35e634de198a703286318d459d80e90987bfb7",
+    "source_snapshot_id": "e2551a80c69ef56a6d1906fff79890916540e63f0450258c5c4a1bac333dd279",
+    "staging_snapshot_id": "57b706177f7d1ad72efd20f90bb36715dce6be1c0268b041319ca465afdb1faa"
+  },
+  "index_id": "bm25:2a751dc020052aed315bd56ac49b92c734e632db94b1f4241d18e273640117ed"
+}

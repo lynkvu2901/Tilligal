@@ -1,0 +1,222 @@
+{
+  "config": {
+    "model": "claude-sonnet-5",
+    "generation_limit": 3,
+    "input_token_cap": 12000,
+    "max_output_tokens": 2048,
+    "budget_usd": "0.30",
+    "reserve_per_call_usd": "0.06848",
+    "total_reserve_usd": "0.20544",
+    "input_count_margin_multiplier": 2,
+    "pricing_verified_on": "2026-10-25",
+    "pricing_source": "https://platform.claude.com/docs/en/models/sonnet-5/overview",
+    "input_usd_per_million": "2",
+    "output_usd_per_million": "10",
+    "index_id": "bm25:2a751dc020052aed315bd56ac49b92c734e632db94b1f4241d18e273640117ed",
+    "mode": "live",
+    "verification_performed": false,
+    "code_hashes": {
+      "ai_core/rag_generation.py": "f384545dadae1051287b85aae2581d15e414c39730347c00b35516b5897fce70",
+      "ai_core/anthropic_provider.py": "2f8fd28d8e0ffa811f6b12b8b92f9fff0837b6055e8f9edce30c479504abdf78",
+      "ai_core/basic_rag.py": "7eed16c60f5b125fc6e4e53b4d003d544370311e98ae9e637b70530989786bb9",
+      "ai_core/rag_cli.py": "3de6fb82e3ad2c0cdb2d85ae2b60f29a66980494fdd37ec82486a7e7bedcf1f3",
+      "ai_core/evidence_builder.py": "9cf771be91f01688167c91d052267ee59f456dd378bc73220ae611640c9cfa3d",
+      "scripts/smoke_claude_live_fix.py": "ccbc7721c5de4210ec565ae1db04dcd8491d7f9e761c884184fc36bdf63fb545"
+    }
+  },
+  "requests": [
+    {
+      "path": "request-001.json",
+      "sha256": "8fdd156b5e4f47955c4f1e100acac47f1b742e6f732210382719b05b10a24034",
+      "bytes": 336005,
+      "status": "DRAFT_UNVERIFIED",
+      "error": null,
+      "provider": {
+        "provider": "anthropic",
+        "endpoint": "https://api.anthropic.com/v1/messages",
+        "api_version": "2026-10-21",
+        "requested_model": "claude-sonnet-5",
+        "returned_model": "claude-sonnet-5",
+        "usage": {
+          "input_tokens": 7327,
+          "output_tokens": 785,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0
+        },
+        "stop_reason": "end_turn",
+        "http_status": 200,
+        "max_output_tokens": 2048,
+        "thinking_type": "disabled",
+        "max_input_bytes": 40000,
+        "structured_output": true,
+        "input_token_cap": 12000,
+        "token_count_http_attempts": 1,
+        "generation_http_attempts": 1,
+        "output_config": {
+          "format": {
+            "type": "json_schema",
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "draft_answer": {
+                  "type": "string",
+                  "description": "Vietnamese draft, at most 180 words; preserve material conditions and exceptions. Abstention: one short sentence."
+                },
+                "candidate_evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Unique IDs from this request; empty when abstaining."
+                },
+                "abstain": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "draft_answer",
+                "candidate_evidence_ids",
+                "abstain"
+              ]
+            }
+          }
+        },
+        "request_body_bytes": 16775,
+        "counted_input_tokens": 7327,
+        "latency_ms": 9904.972000003909
+      },
+      "estimated_cost_usd": "0.022504"
+    },
+    {
+      "path": "request-002.json",
+      "sha256": "fd5dffa939246e24bfe2bb2b1d1ed0ca627dbc632c7e72630eeae1649caba1e4",
+      "bytes": 312194,
+      "status": "DRAFT_UNVERIFIED",
+      "error": null,
+      "provider": {
+        "provider": "anthropic",
+        "endpoint": "https://api.anthropic.com/v1/messages",
+        "api_version": "2026-10-21",
+        "requested_model": "claude-sonnet-5",
+        "returned_model": "claude-sonnet-5",
+        "usage": {
+          "input_tokens": 6759,
+          "output_tokens": 892,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0
+        },
+        "stop_reason": "end_turn",
+        "http_status": 200,
+        "max_output_tokens": 2048,
+        "thinking_type": "disabled",
+        "max_input_bytes": 40000,
+        "structured_output": true,
+        "input_token_cap": 12000,
+        "token_count_http_attempts": 1,
+        "generation_http_attempts": 1,
+        "output_config": {
+          "format": {
+            "type": "json_schema",
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "draft_answer": {
+                  "type": "string",
+                  "description": "Vietnamese draft, at most 180 words; preserve material conditions and exceptions. Abstention: one short sentence."
+                },
+                "candidate_evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Unique IDs from this request; empty when abstaining."
+                },
+                "abstain": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "draft_answer",
+                "candidate_evidence_ids",
+                "abstain"
+              ]
+            }
+          }
+        },
+        "request_body_bytes": 14865,
+        "counted_input_tokens": 6759,
+        "latency_ms": 9730.607299999974
+      },
+      "estimated_cost_usd": "0.022438"
+    },
+    {
+      "path": "request-003.json",
+      "sha256": "b8a39332265bb4f666c24441fc846168d2c35015deb87882ab7fa9b5bcf54453",
+      "bytes": 85164,
+      "status": "ABSTAINED_UNVERIFIED",
+      "error": null,
+      "provider": {
+        "provider": "anthropic",
+        "endpoint": "https://api.anthropic.com/v1/messages",
+        "api_version": "2026-10-21",
+        "requested_model": "claude-sonnet-5",
+        "returned_model": "claude-sonnet-5",
+        "usage": {
+          "input_tokens": 3246,
+          "output_tokens": 148,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0
+        },
+        "stop_reason": "end_turn",
+        "http_status": 200,
+        "max_output_tokens": 2048,
+        "thinking_type": "disabled",
+        "max_input_bytes": 40000,
+        "structured_output": true,
+        "input_token_cap": 12000,
+        "token_count_http_attempts": 1,
+        "generation_http_attempts": 1,
+        "output_config": {
+          "format": {
+            "type": "json_schema",
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "draft_answer": {
+                  "type": "string",
+                  "description": "Vietnamese draft, at most 180 words; preserve material conditions and exceptions. Abstention: one short sentence."
+                },
+                "candidate_evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Unique IDs from this request; empty when abstaining."
+                },
+                "abstain": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "draft_answer",
+                "candidate_evidence_ids",
+                "abstain"
+              ]
+            }
+          }
+        },
+        "request_body_bytes": 6594,
+        "counted_input_tokens": 3246,
+        "latency_ms": 3026.512000004004
+      },
+      "estimated_cost_usd": "0.007972"
+    }
+  ],
+  "estimated_total_usd": "0.052914",
+  "generation_http_attempts": 3,
+  "token_count_http_attempts": 3,
+  "technical_successes": 3
+}

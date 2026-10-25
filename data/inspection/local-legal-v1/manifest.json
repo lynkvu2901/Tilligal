@@ -1,0 +1,159 @@
+{
+  "artifacts": [
+    {
+      "path": "D:\\DOWNLOAD\\Ligalli Illigal\\data\\inspection\\local-legal-v1\\validation.json",
+      "sha256": "f40c8419217c50234b99405c4181240c24da1ea122da7f637fa01a1a0f76b8b6"
+    },
+    {
+      "path": "D:\\DOWNLOAD\\Ligalli Illigal\\data\\selections\\labor-pilot-3.json",
+      "sha256": "ef8d50c78874a775366c9608e88ae84a89da115040a29f219ddc9ea75d6c55cd"
+    }
+  ],
+  "created_at_utc": "2026-10-17T17:32:12.573742+00:00",
+  "dataset_revision": null,
+  "environment": {
+    "beautifulsoup4": "4.14.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pyarrow": "25.0.1",
+    "python": "3.14.2"
+  },
+  "legal_content_status": "UNVERIFIED",
+  "limits": {
+    "html_batch_rows": 1,
+    "light_batch_rows": 4096,
+    "max_full_record_samples_per_table": 5
+  },
+  "raw_files": {
+    "content": {
+      "bytes": 784578084,
+      "created_by": "parquet-cpp-arrow version 25.0.0",
+      "path": "D:\\DOWNLOAD\\Ligalli Illigal\\data\\downloads\\hf-legal\\content.parquet",
+      "row_groups": 35,
+      "rows": 170824,
+      "schema": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "content_html",
+          "type": "string"
+        }
+      ],
+      "sha256": "69c5b99c7e22bd14075ebc60e8d216e9eb35c4f1ab28bfc4c0bc38a87de45aab"
+    },
+    "metadata": {
+      "bytes": 15143095,
+      "created_by": "parquet-cpp-arrow version 25.0.0",
+      "path": "D:\\DOWNLOAD\\Ligalli Illigal\\data\\downloads\\hf-legal\\metadata.parquet",
+      "row_groups": 35,
+      "rows": 171556,
+      "schema": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "so_ky_hieu",
+          "type": "string"
+        },
+        {
+          "name": "ngay_ban_hanh",
+          "type": "string"
+        },
+        {
+          "name": "loai_van_ban",
+          "type": "string"
+        },
+        {
+          "name": "ngay_co_hieu_luc",
+          "type": "string"
+        },
+        {
+          "name": "ngay_het_hieu_luc",
+          "type": "string"
+        },
+        {
+          "name": "nguon_thu_thap",
+          "type": "string"
+        },
+        {
+          "name": "ngay_dang_cong_bao",
+          "type": "string"
+        },
+        {
+          "name": "nganh",
+          "type": "string"
+        },
+        {
+          "name": "linh_vuc",
+          "type": "string"
+        },
+        {
+          "name": "co_quan_ban_hanh",
+          "type": "string"
+        },
+        {
+          "name": "chuc_danh",
+          "type": "string"
+        },
+        {
+          "name": "nguoi_ky",
+          "type": "string"
+        },
+        {
+          "name": "pham_vi",
+          "type": "string"
+        },
+        {
+          "name": "thong_tin_ap_dung",
+          "type": "string"
+        },
+        {
+          "name": "tinh_trang_hieu_luc",
+          "type": "string"
+        }
+      ],
+      "sha256": "d7278e8b911a3a37bde871e24f4061f5beed651bb5f4ee177e2504f0633903fa"
+    },
+    "relationships": {
+      "bytes": 9436116,
+      "created_by": "parquet-cpp-arrow version 25.0.0",
+      "path": "D:\\DOWNLOAD\\Ligalli Illigal\\data\\downloads\\hf-legal\\relationships.parquet",
+      "row_groups": 207,
+      "rows": 1033255,
+      "schema": [
+        {
+          "name": "doc_id",
+          "type": "string"
+        },
+        {
+          "name": "other_doc_id",
+          "type": "string"
+        },
+        {
+          "name": "relationship",
+          "type": "string"
+        }
+      ],
+      "sha256": "2cdb628b4dfdc92e33d234785f80378d0b99418c7711adcbe6402ade98b57ffb"
+    }
+  },
+  "raw_hashes_stable_before_after": true,
+  "revision_hint_from_history": "8977887f17be2defae4c5171d55562e1cde7d695",
+  "revision_status": "UNVERIFIED",
+  "rights_status": "UNVERIFIED",
+  "schema_version": "1",
+  "snapshot_id": "e2551a80c69ef56a6d1906fff79890916540e63f0450258c5c4a1bac333dd279",
+  "source_dataset": "th1nhng0/vietnamese-legal-documents",
+  "source_dataset_basis": "user_supplied_identity; not independently resolved by this offline tool",
+  "tool": {
+    "path": "D:\\DOWNLOAD\\Ligalli Illigal\\scripts\\inspect_local_legal.py",
+    "sha256": "92d0fd67bda2d05082bcd492a36108c0d477c34fbf05a201e29e4c38437f4371"
+  },
+  "upstream_checksum_comparison": "NOT_PERFORMED_BY_THIS_OFFLINE_RUN"
+}
