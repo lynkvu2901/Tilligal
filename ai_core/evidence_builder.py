@@ -121,8 +121,14 @@ class EvidenceBuilder:
 
     def _validate_retrieval(self, response):
         """Validate origin/content, not relevance or correctness of BM25 scores."""
+        v2 = response.get('schema_version') == '2'
+        if v2 and (not isinstance(response.get('config'),dict) or response.get('retriever_id') !=
+                   str(response.get('retrieval_method','')).lower() + ':' + digest(response.get('config'))):
+            raise ContractError('retriever identity mismatch')
         if (response.get("index_id") != self._index_id or response.get("source") != self._payload["source"]
-                or response.get("schema_version") != "1" or response.get("retrieval_method") != "BM25"
+                or (not v2 and (response.get("schema_version") != "1" or response.get("retrieval_method") != "BM25"))
+                or (v2 and (response.get('retrieval_method') not in ('DENSE','HYBRID','HYBRID_RERANK')
+                            or not isinstance(response.get('retriever_id'),str)))
                 or response.get("usage_policy") != "EXPERIMENTAL_ONLY"
                 or response.get("corpus_snapshot_id") is not None):
             raise ContractError("retrieval origin mismatch")
@@ -136,11 +142,13 @@ class EvidenceBuilder:
         for rank, hit in enumerate(hits, 1):
             chunk = hit.get("chunk", {})
             cid = chunk.get("chunk_id")
-            score = hit.get("bm25_score")
+            score = hit.get("score") if v2 else hit.get("bm25_score")
+            if v2 and (hit.get('score_kind') != response['retrieval_method'] or not isinstance(hit.get('ranking'),dict)):
+                raise ContractError('retrieval score metadata mismatch')
             if (cid in seen or cid not in self._chunks or chunk != self._chunks[cid]
                     or hit.get("document") != self._documents[chunk["document_version_id"]]
                     or type(hit.get("rank")) is not int or hit["rank"] != rank
-                    or type(score) not in (int, float) or not math.isfinite(score) or score <= 0):
+                    or type(score) not in (int, float) or not math.isfinite(score) or (not v2 and score <= 0)):
                 raise ContractError("retrieval hit identity/content/rank/score mismatch")
             if (hit.get("address_status") != ADDRESS_STATUS[chunk["attachment_status"]]
                     or hit.get("exact_citation_verified") is not False
@@ -183,7 +191,9 @@ class EvidenceBuilder:
             cid = seed["chunk_id"]
             requested = {cid: "RETRIEVED", **window}
             included = sorted((c for c in requested if c in selected), key=lambda c: self._source_order(self._chunks[c]))
-            groups.append({"retrieved_chunk_id": cid, "rank": hit["rank"], "bm25_score": hit["bm25_score"],
+            score_fields = ({'score':hit['score'],'score_kind':hit['score_kind'],'ranking':deepcopy(hit['ranking'])}
+                            if retrieval['schema_version'] == '2' else {'bm25_score':hit['bm25_score']})
+            groups.append({"retrieved_chunk_id": cid, "rank": hit["rank"], **score_fields,
                            "retrieval_cautions": deepcopy(hit["cautions"]),
                            "members": [{"evidence_id": selected[c]["evidence_id"], "role": requested[c]} for c in included],
                            "omitted_chunk_ids": [c for c in requested if c not in selected],
@@ -206,4 +216,10 @@ class EvidenceBuilder:
                   "trace": {"search_calls": 0, "llm_calls": 0,
                             "seed_count": len(hits), "evidence_count": len(selected)}}
         bundle["bundle_id"] = "bundle:" + digest(bundle)
+        if retrieval.get('schema_version') == '2':
+            bundle['retrieval_method'] = retrieval['retrieval_method']
+            bundle['retriever_id'] = retrieval['retriever_id']
+            if retrieval.get('trace',{}).get('execution_status') == 'DEGRADED':
+                bundle['limitations'].append('RETRIEVAL_DEGRADED_BRANCH_UNAVAILABLE')
+            bundle['bundle_id'] = 'bundle:' + digest({k:v for k,v in bundle.items() if k != 'bundle_id'})
         return bundle

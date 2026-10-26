@@ -8,8 +8,9 @@ from ai_core.rag_generation import GenerationError, GenerationText, PROMPT_VERSI
 
 
 class BasicRAG:
-    def __init__(self, index, provider, evidence_budget=None):
+    def __init__(self, index, provider, evidence_budget=None, *, retriever=None):
         self._index = index
+        self._retriever = retriever if retriever is not None else index
         self._builder = EvidenceBuilder(index, evidence_budget)
         self._provider = provider
 
@@ -42,7 +43,7 @@ class BasicRAG:
             event(stage)
             stage = "retrieval"
             trace['retrieval_calls'] = 1
-            retrieval = self._index.search(question, top_k)
+            retrieval = self._retriever.search(question, top_k)
             trace['retrieval'] = deepcopy(retrieval)
             event(stage)
             stage = "evidence"
