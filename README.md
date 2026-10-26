@@ -1,78 +1,238 @@
 
-# Tillegal AI Core
+# Tillegal — Vietnamese Legal RAG Assistant
 
-AI Core cho hệ thống trợ lý pháp luật Việt Nam, sử dụng RAG để tìm kiếm văn bản pháp luật và sinh câu trả lời kèm trích dẫn nguồn.
+Tillegal is a Retrieval-Augmented Generation (RAG) system for Vietnamese legal question answering. The system retrieves relevant legal provisions from an indexed document collection and uses a Large Language Model (LLM) to generate evidence-grounded answers with source citations.
 
-Hiện hỗ trợ:
-- BM25, Dense và Hybrid Retrieval
-- Reranker
-- Evidence Builder
-- LLM Generation (Claude hoặc provider tương thích)
-- Candidate Citations
+The current release provides a sequential RAG pipeline with hybrid retrieval, reranking, evidence construction, and LLM-based answer generation.
 
-**Lưu ý:** AI Core hiện là thư viện Python, chưa có HTTP API. Backend cần bọc hàm `BasicRAG.answer()` thành endpoint để gọi.
+> **Project status:** RAG baseline (experimental). Generated answers and citations have not undergone independent legal verification and must not be treated as authoritative legal advice.
 
-## 1. Clone và cài đặt
+## 1. Features
 
-Yêu cầu môi trường đã kiểm thử: Windows, Python 3.14.2.
+- **BM25 Retrieval:** Keyword-based retrieval over indexed Vietnamese legal documents.
+- **Dense Retrieval:** Semantic search using multilingual text embeddings.
+- **Hybrid Retrieval:** Combines BM25 and dense retrieval using Reciprocal Rank Fusion (RRF).
+- **Reranking:** Reorders retrieved candidates using a cross-encoder model.
+- **Evidence Construction:** Builds a structured context from retrieved legal passages.
+- **LLM Generation:** Generates answers grounded in retrieved evidence.
+- **Candidate Citations:** Returns document references, provision metadata, and supporting excerpts.
+- **Execution Traces:** Records retrieval and generation information for debugging and evaluation.
+- **Interactive CLI:** Supports offline mock execution and live LLM inference.
+- **Python Integration:** Exposes `BasicRAG.answer()` for integration with external services.
+
+## 2. System Architecture
+
+```text
+                       User Question
+                             |
+                             v
+                      Query Processing
+                             |
+               +-------------+-------------+
+               |                           |
+               v                           v
+         BM25 Retrieval              Dense Retrieval
+               |                           |
+               +-------------+-------------+
+                             |
+                             v
+                   Hybrid Fusion (RRF)
+                             |
+                             v
+                         Reranker
+                             |
+                             v
+                      Evidence Builder
+                             |
+                             v
+                       LLM Generation
+                             |
+                             v
+                  Answer + Candidate Citations
+```
+
+The retrieval strategy is configurable. BM25, dense retrieval, and hybrid retrieval can be executed independently. Reranking is optional.
+
+The current pipeline is sequential. Multi-agent orchestration and automated legal citation verification are not included in this release.
+
+## 3. Technology Stack
+
+| Component | Technology |
+| --- | --- |
+| Language | Python |
+| Keyword Retrieval | BM25 |
+| Semantic Retrieval | Dense Embeddings |
+| Retrieval Fusion | Reciprocal Rank Fusion |
+| Embedding Model | `intfloat/multilingual-e5-small` |
+| Reranker Model | `BAAI/bge-reranker-v2-m3` |
+| LLM Generation | Anthropic Claude / compatible chat-completions provider |
+| Model Framework | PyTorch, Transformers |
+| Data Processing | PyArrow, Beautiful Soup |
+| Integration Interface | Python API |
+
+## 4. Installation
+
+### 4.1. Requirements
+
+The reference environment is:
+
+- Windows
+- Python 3.14.2
+- Internet access for initial model downloads
+- Sufficient disk space for model artifacts
+
+The dependency lock file was generated for the reference environment. Compatibility with other Python versions and operating systems has not yet been fully validated.
+
+### 4.2. Clone the Repository
 
 ```powershell
 git clone https://github.com/lynkvu2901/Tilligal.git
 cd Tilligal
+```
 
+### 4.3. Create a Virtual Environment
+
+```powershell
 python -m venv .venv
+```
+
+Install the project dependencies:
+
+```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
+```
+
+Verify the installation:
+
+```powershell
 .\.venv\Scripts\python.exe -m pip check
 ```
 
-## 2. Chuẩn bị dữ liệu và model
+All subsequent commands assume execution from the repository root.
 
-Hai thư mục index đã có trong GitHub:
+## 5. Data and Retrieval Indexes
 
-- `data/indexes/labor-pilot-3-t4-bm25/`
-- `data/indexes/labor-pilot-3-t7-dense/`
+The repository includes the retrieval indexes required for the current pilot corpus.
 
-Index hiện phục vụ bộ dữ liệu thử nghiệm gồm 3 văn bản pháp luật. Không cần tải lại raw dataset để chạy inference.
+### 5.1. BM25 Index
 
-Cần tải thêm embedding model và reranker về máy:
-
-```powershell
-$py = '.\.venv\Scripts\python.exe'
-
-& $py -B -m scripts.setup_t7_models --kind embedding --revision 614241f622f53c4eeff9890bdc4f31cfecc418b3
-
-& $py -B -m scripts.setup_t7_models --kind reranker --revision 953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e
+```text
+data/indexes/labor-pilot-3-t4-bm25/
+├── index.json
+└── manifest.json
 ```
 
-Models:
-- Embedding: `intfloat/multilingual-e5-small`
-- Reranker: `BAAI/bge-reranker-v2-m3`
+The BM25 index stores the document chunks and metadata required for retrieval.
 
-**Lưu ý:** Runtime kiểm tra tính tương thích giữa source, index và model. Nếu index không load được do checksum, phiên bản hoặc đường dẫn, cần kiểm tra nguyên nhân; không bỏ qua integrity checks.
+The current pilot contains **3,085 chunks** derived from three legal documents.
 
-## 3. Chạy thử RAG
+### 5.2. Dense Index
 
-Chạy Hybrid Retrieval + Reranker ở chế độ MOCK (không gọi LLM thật):
+```text
+data/indexes/labor-pilot-3-t7-dense/
+├── manifest.json
+├── rows.json
+└── vectors.npy
+```
+
+The dense index contains vector representations associated with the indexed legal passages.
+
+### 5.3. Dataset Requirements
+
+Raw Parquet files are not required for inference when using the existing retrieval indexes.
+
+Raw data is only necessary when rebuilding indexes, changing document processing rules, or extending the legal corpus.
+
+**Important:** The current indexes cover a limited pilot corpus. The system is not designed to provide comprehensive coverage of Vietnamese legislation in its present state.
+
+## 6. Model Setup
+
+Model weights are not included in the repository and must be downloaded before using dense retrieval and reranking.
+
+### 6.1. Download the Embedding Model
+
+Model: `intfloat/multilingual-e5-small`
 
 ```powershell
-$out = "data/demos/test-$([guid]::NewGuid().ToString('N'))"
+.\.venv\Scripts\python.exe -B -m scripts.setup_t7_models --kind embedding --revision 614241f622f53c4eeff9890bdc4f31cfecc418b3
+```
+
+### 6.2. Download the Reranker
+
+Model: `BAAI/bge-reranker-v2-m3`
+
+```powershell
+.\.venv\Scripts\python.exe -B -m scripts.setup_t7_models --kind reranker --revision 953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e
+```
+
+The setup scripts create model configuration and cache artifacts used by the retrieval runtime.
+
+### 6.3. Compatibility and Integrity
+
+The runtime validates relationships between:
+
+- Retrieval indexes
+- Source code
+- Model revisions
+- Model configurations
+- Artifact manifests
+
+Index manifests include integrity information. Changes to source files, line endings, model versions, or artifact locations may cause validation failures.
+
+Do not disable integrity checks or manually alter stored hashes to bypass these errors.
+
+The existing dense index was prepared for a specific model snapshot. Rebuilding may be necessary if the execution environment or model configuration is incompatible.
+
+## 7. Running the Application
+
+Tillegal provides an interactive command-line interface through:
+
+```text
+ai_core.demo_cli
+```
+
+Two execution modes are available:
+
+| Mode | Description |
+| --- | --- |
+| MOCK | Executes the RAG pipeline without calling a paid LLM |
+| LIVE | Calls the configured Claude API to generate real answers |
+
+### 7.1. Offline Demo — MOCK
+
+To run hybrid retrieval with reranking:
+
+```powershell
+$out = "data/demos/mock-$([guid]::NewGuid().ToString('N'))"
 
 .\.venv\Scripts\python.exe -B -m ai_core.demo_cli --retrieval hybrid --rerank --output-dir $out
 ```
 
-Sau khi chương trình khởi động, nhập câu hỏi pháp luật. Gõ `exit` để thoát.
+After initialization, enter a Vietnamese legal question.
 
-MOCK chỉ dùng để kiểm tra luồng Retrieval và Evidence, không phải câu trả lời do LLM sinh.
+Example:
 
-### Chạy với Claude thật
-
-Cấu hình API key trong biến môi trường của process:
-
-```powershell
-$env:ANTHROPIC_API_KEY = "YOUR_API_KEY"
+```text
+Người sử dụng lao động cần thực hiện những việc gì để tổ chức đối thoại định kỳ tại nơi làm việc?
 ```
 
-Sau đó chạy:
+Type `exit` to terminate the session.
+
+**MOCK mode does not generate answers with Claude.** It is intended to validate retrieval, evidence construction, and the execution pipeline.
+
+### 7.2. Live Demo — Claude
+
+LIVE mode requires a valid Anthropic API key.
+
+Set the key in the process environment:
+
+```powershell
+$env:ANTHROPIC_API_KEY = "YOUR_ANTHROPIC_API_KEY"
+```
+
+Replace the placeholder with an actual API key. Do not commit API keys or environment files containing secrets to Git.
+
+Start the live RAG pipeline:
 
 ```powershell
 $out = "data/demos/live-$([guid]::NewGuid().ToString('N'))"
@@ -80,23 +240,43 @@ $out = "data/demos/live-$([guid]::NewGuid().ToString('N'))"
 .\.venv\Scripts\python.exe -B -m ai_core.demo_cli --retrieval hybrid --rerank --live --output-dir $out
 ```
 
-Lệnh LIVE sẽ gọi Claude API và phát sinh chi phí.
+The `--live` flag enables real LLM inference.
 
-Không commit API key hoặc file `.env` chứa secret lên GitHub.
+The application will:
 
-## 4. Tích hợp Backend
+1. Accept a question.
+2. Retrieve relevant legal document chunks.
+3. Combine keyword and semantic retrieval results.
+4. Rerank retrieved candidates.
+5. Construct the evidence context.
+6. Send the question and evidence to Claude.
+7. Return a generated answer with candidate citations.
 
-Entry point Python:
+**LIVE execution incurs API usage costs.**
 
-`ai_core.basic_rag.BasicRAG.answer()`
+The CLI uses its own configured Claude model preset. Check `ai_core/demo_cli.py` for the active model configuration.
 
-Input chính:
+### 7.3. Output Directories
 
-- `question`: Câu hỏi người dùng.
-- `request_id`: ID duy nhất cho request.
-- `top_k`: Số lượng evidence muốn lấy.
+The CLI writes execution artifacts to the configured output directory.
 
-Ví dụ sử dụng với BM25 và MOCK:
+Use a new output directory for each run to avoid conflicts with existing execution artifacts.
+
+The examples above generate unique directory names automatically.
+
+## 8. Python API
+
+The primary integration entry point is:
+
+```python
+ai_core.basic_rag.BasicRAG.answer()
+```
+
+The method accepts a question and returns a JSON-serializable Python dictionary.
+
+### 8.1. Basic Example
+
+The following example runs BM25 retrieval with the offline mock provider:
 
 ```python
 from pathlib import Path
@@ -112,7 +292,10 @@ index = load_index(
     Path("data/indexes/labor-pilot-3-t4-bm25/manifest.json")
 )
 
-retriever = make_retriever(index, mode="bm25")
+retriever = make_retriever(
+    index,
+    mode="bm25",
+)
 
 rag = BasicRAG(
     index,
@@ -132,74 +315,223 @@ print(result["answer"])
 print(result["candidate_citations"])
 ```
 
-Ví dụ trên chỉ kiểm tra tích hợp Python bằng BM25 + MOCK.
+This example uses `MockProvider` and does not make a live LLM request.
 
-Để chạy Hybrid + Rerank + LLM thật, Backend cần sử dụng retriever và generation provider tương ứng đã có trong `ai_core`. Xem `ai_core/demo_cli.py` và `ai_core/retrieval_runtime.py` để tham khảo cách khởi tạo theo source hiện tại.
+For live generation, initialize `BasicRAG` with the configured live provider instead of `MockProvider`.
 
-Nên khởi tạo index, retriever và LLM provider **một lần khi Python service khởi động**, sau đó tái sử dụng cho các request.
+Refer to the existing implementation in:
 
-### Luồng tích hợp đề xuất
+- `ai_core/anthropic_provider.py`
+- `ai_core/rag_generation.py`
+- `ai_core/retrieval_runtime.py`
+- `ai_core/demo_cli.py`
+
+The CLI `--live` flag is not a parameter of `BasicRAG.answer()`. Live inference is enabled by selecting an appropriate provider during initialization.
+
+## 9. API Contract
+
+### 9.1. Inputs
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `question` | `str` | User question, maximum 10,000 characters |
+| `request_id` | `str` | Non-empty request identifier |
+| `top_k` | `int` | Number of retrieved results, from 1 to 100 |
+
+### 9.2. Response Structure
+
+The response is a JSON-serializable dictionary containing fields such as:
+
+| Field | Description |
+| --- | --- |
+| `schema_version` | Response schema version |
+| `request_id` | Request identifier |
+| `question` | Original user question |
+| `status` | Execution status |
+| `answer` | Generated answer or message |
+| `candidate_citations` | Candidate document citations |
+| `evidence_bundle` | Evidence context |
+| `verification_status` | Citation verification status |
+| `warnings` | Execution and data-quality warnings |
+| `trace` | Retrieval and generation diagnostics |
+| `error` | Error information, if applicable |
+
+Possible statuses:
 
 ```text
-Frontend
-   |
-   v
-Backend .NET
-   |
-   | HTTP
-   v
-Python API Wrapper
-   |
-   v
+DRAFT_UNVERIFIED
+ABSTAINED_UNVERIFIED
+NO_EVIDENCE
+FAILED
+```
+
+A `DRAFT_UNVERIFIED` result indicates that an answer was generated without completed legal citation verification.
+
+### 9.3. Example Response
+
+The following is a simplified illustrative response, not an actual system output:
+
+```json
+{
+  "request_id": "example-request-001",
+  "status": "DRAFT_UNVERIFIED",
+  "answer": "Generated answer based on retrieved legal evidence.",
+  "candidate_citations": [],
+  "verification_status": "NOT_PERFORMED",
+  "warnings": []
+}
+```
+
+Candidate citation objects may include document identification, legal provision metadata, supporting excerpts, and warnings.
+
+## 10. Backend Integration
+
+Tillegal AI Core is implemented as a Python library.
+
+It does not currently provide a standalone HTTP server.
+
+External backend systems can integrate the AI Core by exposing `BasicRAG.answer()` through an HTTP API or another suitable Python interoperability layer.
+
+Example integration architecture:
+
+```text
+Client Application
+        |
+        v
+Application Backend
+        |
+        | HTTP / RPC
+        v
+Python AI Service
+        |
+        v
 BasicRAG.answer()
-   |
-   v
+        |
+        v
+RAG Pipeline
+        |
+        v
 Answer + Candidate Citations
 ```
 
-Backend có thể bọc Python AI Core thành một HTTP endpoint, ví dụ `POST /api/ai/ask`.
+### Integration Recommendations
 
-**Endpoint này chưa được triển khai trong repository; đây là phần Backend cần xây dựng.**
+- Initialize retrieval indexes and ML models once during service startup.
+- Reuse initialized model instances across requests where safe.
+- Assign a unique `request_id` to each request.
+- Validate incoming questions and retrieval parameters.
+- Handle initialization failures and unsuccessful RAG statuses.
+- Apply appropriate request timeouts and concurrency limits.
+- Keep LLM API credentials on the server.
+- Avoid exposing full traces, raw prompts, or internal diagnostics to end users.
+- Treat candidate citations as unverified until an independent verification step has been completed.
 
-## 5. Kết quả trả về
+A backend-facing HTTP endpoint can be implemented separately. No specific HTTP route is provided by the current AI Core package.
 
-`BasicRAG.answer()` trả về dictionary có thể chuyển thành JSON.
+## 11. LLM Providers
 
-Các trường quan trọng:
+### 11.1. Anthropic Claude
 
-| Field | Ý nghĩa |
-|---|---|
-| `request_id` | ID request |
-| `status` | Trạng thái xử lý |
-| `answer` | Câu trả lời |
-| `candidate_citations` | Các trích dẫn nguồn ứng viên |
-| `evidence_bundle` | Evidence được sử dụng |
-| `warnings` | Cảnh báo |
-| `error` | Thông tin lỗi |
-| `trace` | Dữ liệu phục vụ debug |
+The existing AI Core includes an Anthropic provider.
 
-Các trạng thái có thể gặp:
-- `DRAFT_UNVERIFIED`
-- `ABSTAINED_UNVERIFIED`
-- `NO_EVIDENCE`
-- `FAILED`
+Relevant environment variables:
 
-Backend cần xử lý các trạng thái lỗi và không trả nguyên `trace`, prompt hoặc thông tin nhạy cảm cho người dùng cuối.
+```text
+ANTHROPIC_API_KEY
+ANTHROPIC_MODEL
+```
 
-## 6. LLM Provider
+For Python integration, the provider implementation supports initialization from the environment with explicit permission for live requests.
 
-AI Core hiện có Anthropic Provider cho Claude và Chat-Completions Provider.
+Refer to:
 
-Có thể tích hợp LLM khác như GPT nếu giao diện provider tương thích. Không mặc định rằng mọi model hoặc endpoint OpenAI đã được kiểm thử.
+```text
+ai_core/anthropic_provider.py
+```
 
-API key phải do môi trường triển khai cung cấp, không hard-code trong source.
+### 11.2. Compatible Chat-Completions Providers
 
-## 7. Giới hạn hiện tại
+The project also includes a chat-completions provider abstraction.
 
-- RAG hiện hoạt động trên corpus pilot gồm 3 văn bản pháp luật.
-- Candidate citations chưa được xác minh pháp lý đầy đủ.
-- Chưa triển khai Multi-Agent và Citation Verification.
-- Chưa có HTTP API server.
-- Chưa kiểm thử triển khai trên Linux hoặc macOS.
+Relevant configuration variables:
 
-Mục tiêu bàn giao hiện tại: **Backend có thể chạy AI Core, truyền câu hỏi vào `BasicRAG.answer()` và lấy kết quả để trả về Frontend.**
+```text
+TILLEGAL_LLM_ENDPOINT
+TILLEGAL_LLM_MODEL
+TILLEGAL_LLM_API_KEY
+```
+
+Other LLM services, including OpenAI-compatible endpoints, may be integrated when their request and response formats are supported.
+
+Compatibility with every GPT model or API version has not been independently verified.
+
+Changing an API key alone does not guarantee provider compatibility.
+
+## 12. Project Structure
+
+```text
+Tillegal/
+├── ai_core/
+│   ├── adapters/
+│   ├── anthropic_provider.py
+│   ├── basic_rag.py
+│   ├── bm25_retrieval.py
+│   ├── data_contracts.py
+│   ├── demo_cli.py
+│   ├── dense_retrieval.py
+│   ├── evidence_builder.py
+│   ├── hybrid_retrieval.py
+│   ├── legal_parser.py
+│   ├── rag_cli.py
+│   ├── rag_generation.py
+│   ├── reranking.py
+│   ├── retrieval_contracts.py
+│   └── retrieval_runtime.py
+├── data/
+│   └── indexes/
+│       ├── labor-pilot-3-t4-bm25/
+│       └── labor-pilot-3-t7-dense/
+├── scripts/
+│   ├── build_dense_index.py
+│   ├── inspect_local_legal.py
+│   └── setup_t7_models.py
+├── requirements.txt
+├── requirements-lock.txt
+└── README.md
+```
+
+Additional local evaluation data, model caches, and experiment outputs are not required to be committed to the repository.
+
+## 13. Current Limitations
+
+The current release is an experimental RAG baseline with the following limitations:
+
+1. **Limited Corpus:** The indexed dataset contains only three pilot legal documents.
+2. **Unverified Citations:** Citation candidates have not undergone independent claim-support verification.
+3. **Legal Validity:** The system does not automatically determine whether all referenced provisions remain legally effective.
+4. **Synchronous Inference:** The current Python interface is synchronous.
+5. **No HTTP Server:** An application integration layer must be implemented separately.
+6. **No Multi-Agent Orchestration:** Query, Search, Judge, Summary, and Verify agents are planned for future development.
+7. **Deployment Validation:** Linux/macOS deployment, concurrent workloads, and production-scale performance have not been fully validated.
+
+## 14. Roadmap
+
+Planned development includes:
+
+- Query and Search Agents
+- Evidence sufficiency assessment
+- Multi-agent orchestration
+- Claim-level citation verification
+- Legal provision and document-version validation
+- RAG evaluation and benchmarking
+- Improved reliability and observability
+
+These components are not part of the current RAG baseline.
+
+## 15. License and Data Notice
+
+Third-party datasets and models are subject to their respective licenses and usage conditions.
+
+The provenance and redistribution permissions of the local legal corpus and derived artifacts should be verified before public distribution.
+
+This software is an experimental research and development project. Its outputs should not be used as a substitute for verification against authoritative legal sources.
