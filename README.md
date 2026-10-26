@@ -1,4 +1,4 @@
-# Tillegal AI Core — bàn giao Backend
+# Tillegal AI Core
 
 RAG tuần tự: BM25 / dense / hybrid (RRF), reranker tùy chọn, evidence builder và generation provider. Entry point Python là `ai_core.basic_rag.BasicRAG.answer()`. Chưa có API server; kết quả là bản nháp và candidate citations chưa xác minh pháp lý.
 
